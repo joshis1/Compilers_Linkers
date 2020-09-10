@@ -1,0 +1,314 @@
+>>main.o - relocatable object file
+
+>>assembler --> .o -- 
+
+assembler couldn't generate machine level code.
+
+processor architecture -->
+
+.>> instructions--> 
+
+procesor name or processor architecture.
+>>
+Machine dependent options --
+>>
+ARM options -->
+----> -march -- machine architecture.
+
+-march=armv7ve
+
+###
+another option --
+-mcpu=name -- 
+
+>> -mtune=name --
+
+-mtune=cortex-m4.
+
+###
+-mcpu= -- name of the target ARM processor - 
+>arm-none-eabi-gcc  -mcpu=cortex-m4  -mthumb -c main.c -o main.o
+
+-mthumb and -marm -- 
+select between generating code that executes in ARM and Thumb state.
+
+>>
+## Assembly code output.
+arm-none-eabi-gcc  -mcpu=cortex-m4  -mthumb -S main.c -o main.s 
+>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+Makefile --
+>>>>>>>>>>>
+
+>>gnu11 -- C 11
+CC ->stands for cross compiler.
+
+-o0 - no optimization
+cc-arm-none-eabi-gcc
+MACH=cortex-m4
+CFLAGS= -c -mcpu=$(MACH) -mthumb -std=gnu11 -o0 
+
+main.o --> target
+
+<<target:dependency>
+main.o: main.c
+	$(CC) $(CFLAGS)-o $@ $^
+	
+$^ -- dependency -- 
+$@ -- target.
+
+
+Makefile --
+
+>> install the command -- 
+
+Make for Windows -- 
+
+>> installation forlder -- bin -- 
+copy path -- 
+properties - advanced system setting -- 
+paths -- path
+
+C:\Program Files (x86)\GnuWin32\bin
+
+##-- Linker script
+arm-none-eabl-gcc -nostdlib -T stm32_ls.ld *.o -o final.elf
+
+
+arm-none-eabi-objdump.exe -h final.elf
+<<<<<<<<<<<<<<<
+
+Map file -> analyze resource allocation and 
+placement in the memory.
+
+Memory map file -->
+
+map file -->
+
+LDFLAGS  -Map=Final.map
+
+>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<
+
+-Wl, -Map=Final.map
+
+MINGW - Install.
+
+https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download
+
+## to see all symbols 
+
+arm-none-eabi-nm.exe final.elf --> symbol table. ( maintained by linker)
+
+###################
+
+Downloading and debugging executable.
+
+Host (.elf) -> download debug board.
+
+Host OpenOCD --> Debug Adatper(in ckt programming) -> target.
+
+Debug Adapter  JTAG or SWD protocol - Target
+Host - USB - 
+
+Debug - converts usb to host..conversion.
+
+OpenOCD --> Open - On chip Debugger.
+OpenOCD - uses GDB.
+OpenOCD - usb based, parallel type.
+Flash programming - external CFI compatible NOR flashes 
+- Intel and AMD/Spansion command set. and several internal 
+flashes - LCP1700, LPC1800, LCP2000, .
+
+SWD - Serial Wide Debugging.
+
+####
+Programming adapters.
+
+popular debug adapters -- 
+
+J-Link EDU - JTAG/SWD Debugger.
+
+# - 20-pin - target interface.
+##
+KEIL - ULINK - JTAG, SWD, SWO, ETM Streaming.
+20-pin, 10-pin connector.
+################################
+
+Telnet CLient - GDB Client.
+Host PC - OpenOCD - GDB , telnet Server, 
+flash programming, driver --> ST-LINK-Driver 
+
+
+Target Board - SWD - just 2 pins.
+SWDCLK, SWDIO, --> DP - Microcontroller ->
+
+JTAG needs atleast 4 pins.
+
+AHB-AP -- AHB Access point --
+
+AHB interconnect --> AHB Bus -- SRAM, Flash Controller -- other peripherals.
+
+##
+
+Steps to download the code using OpenOCD
+1) Download and install openOCD
+2) Telnet Client or you can use GDB client - Putty 
+3) Run OpenOCD with board configuration file
+4) Connect to the OpenOCD via Telnet Client or GDB Client.
+5) Issue command over telnet or GDB client to OpenOCD 
+to download and debug the code.
+
+GNU MCU - Eclipse - OpenOCD.
+
+scripts/boards/ 
+
+board files -> 
+
+Using gdb.
+arm-none-eabi-gdb.exe 
+> target remote localhost:3333
+> monitor reset init 
+#reset init is open ocd  
+(gdb) monitor flash write_image erase final.elf 
+
+google - openocd general commands.
+(gdb) monitor flash write_image erase final.elf
+(gdb) monitor reset halt 
+
+(gdb) monitor resume 
+
+(gdb) monitor halt 
+(gdb) monitor reset 
+
+#final.map file -- 
+
+.data -> 0x2000000 
+
+(gdb)monitor  mdw 0x2000000 4
+(gdb  monitor bp <task_handler>  <2> hw 
+(gdb) monitor resume 
+
+(gdb) monitor rbp <task_handler> 
+(gdb) monitor bp
+############
+
+(gdb) quit
+
+##########
+putty -  
+localhost - 4444 
+telnet .
+openocd.
+
+#########
+Newlib is a 'C' standard library -
+
+NewLib only ISO C  
+Glibc - ISO C, pOSIx, sytem V
+
+Newlib-nano - reduced feature version of new lib.
+
+new lib doesn't support float data type.
+
+GNU tools arm embedded -- 
+
+libc.a --> new lib library ..
+
+librdimon.a ->semi hosting library.
+nano-specs - spec files.
+
+nosys.specs 
+
+pid.specs
+rdimon.specs - 
+
+spec files - are used during linking stage.
+
+printf() -> Newlib-Nano -> _write();
+
+_write(){...} --> stubs -- 
+
+--> UART , ITM or LCD.
+
+_write funciton implelmented here will recieve al the 
+strings pre-formatted by printf();
+
+write();
+read();
+
+sbrk() --> malloc() ..
+
+syscalls.c 
+
+nosyspecs. 
+
+nano.specs.
+
+LDFLAGS = --specs=nano.specs //newlib nano std lib library.
+
+crto.o -- c run time .. 
+
+__start :
+
+__bss_start__
+__bss_end__
+__sbrk
+
+linker script 
+
+sbrk needs to end of heap.
+
+heap starts after bss section --
+
+objdump -h final.elf 
+
+      |                             ^
+arm-none-eabi-gcc --specs=nano.specs -T stm32.ld -Wl,-Map=final.map -o final.elf main.o led.o stm32_startup.o syscalls.o
+c:/program files (x86)/gnu arm embedded toolchain/9 2020-q2-update/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/bin/ld.exe: c:/program files (x86)/gnu arm embedded toolchain/9 2020-q2-update/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/crt0.o: in function `_mainCRTStartup':
+(.text+0x128): undefined reference to `__bss_start__'
+c:/program files (x86)/gnu arm embedded toolchain/9 2020-q2-update/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/bin/ld.exe: (.text+0x12c): undefined reference to `__bss_end__'
+c:/program files (x86)/gnu arm embedded toolchain/9 2020-q2-update/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/bin/ld.exe: syscalls.o: in function `_sbrk':
+syscalls.c:(.text+0x258): undefined reference to `end'
+collect2.exe: error: ld returned 1 exit status
+make: *** [final.elf] Error 1
+
+>>Reset_handler() ->
+                  initialize data section
+				   --> initialize bss section
+				    --> initialize 'C' std library  _libc_init_array();
+					 --> main();
+
+					 
+					 				
+Semi hosting - Openocd -->
+
+printf messages on openocd console --
+
+--specs=rdimon.specs
+librdimon_nano.a 
+
+final_sh.elf 
+
+initialise_monitor_handles(); 
+
+//semi hosting init function.
+extern void initialise_monitor_handles(void);
+
+//openocd needs /n for semihosting to know it is end of the message.
+
+openocd
+>arm semihosting enable 
+
+> reset 
+>halt
+> shutdown --> to disconnect openocd 
+
+
+
+
+
+
+
+
+
+
